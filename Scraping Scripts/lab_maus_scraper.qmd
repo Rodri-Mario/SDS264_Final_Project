@@ -1,0 +1,111 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+#Importing libraries
+library(tidyverse)
+library(rvest)
+library(polite)
+library(httr)
+```
+
+```{r}
+#Function to get the ith member of a Pokemon team in a LabMaus listing
+#session - a rvest session
+#index - an integer from 1 - 6
+get_ith_pokemon <-function(session, index){
+  #Error handling for index
+  if (index < 1 | index > 6){
+    stop("Invalid index provided, should be bewteen 1 and 6", call = FALSE)
+  }
+  else{
+    #Build CSS Selector for the image that represents the ith Pokemon in the team
+    css_search <- str_c(".pokemon-teams-icon:nth-child(", index, ") img")
+    #Scrape LabMaus using the provided session
+    session |> 
+      html_elements(css_search) |> 
+      html_attr("src") |> 
+      str_extract("pokemon/(\\d+)", group = 1)
+  }
+}
+```
+
+
+```{r}
+#Function to get the Pokemon VGC tournament results from LabMaus
+#tournament_id - the id of the specific tournamnet on LabMaus
+#defaults to 4805 i.e. Stuttgart Pokémon VGC Regional Championship 2025.
+#up_to_rank - number of teams to get based on how well they performed in the
+#tournament.
+get_tournament_results <- function(tournament_id = 4805, up_to_rank = 50){
+  #Create url to scrape
+  full_url <- str_c("https://labmaus.net/tournaments/", 
+                    tournament_id, 
+                    "/", 
+                    up_to_rank
+              )
+  #Initialize session
+  session <- read_html_live(full_url)
+  #wait for the page to fully load/run javascript
+  Sys.sleep(10)
+  
+  #Get placement data for each team
+  placement <- session |> 
+    html_elements(".max-w-\\[1300px\\] td:nth-child(1)") |> 
+    html_text()
+  
+  #Get win/loss data for each team
+  win_loss <- session |> 
+    html_elements(".max-w-\\[1300px\\] td:nth-child(4)") |> 
+    html_text()
+  
+  #Get the National Dex Number of each Pokemon in the team
+  first_pokemon <-session |> 
+    get_ith_pokemon(1)
+  
+  glimpse(first_pokemon)
+  
+  second_pokemon <-session |> 
+    get_ith_pokemon(2)
+  
+  third_pokemon <-session |> 
+    get_ith_pokemon(3)
+  
+  fourth_pokemon <-session |> 
+    get_ith_pokemon(4)
+  
+  fifth_pokemon <-session |> 
+    get_ith_pokemon(5)
+  
+  sixth_pokemon <-session |> 
+    get_ith_pokemon(6)
+  
+  #Combining into one tibble
+  tibble(
+    placement = parse_number(placement),
+    win = win_loss |> str_split_i("-", 1) |> parse_number(),
+    loss = win_loss |> str_split_i("-", 2) |> parse_number(),
+    first_pokemon = parse_number(first_pokemon),
+    second_pokemon = parse_number(second_pokemon),
+    third_pokemon = parse_number(third_pokemon),
+    fourth_pokemon = parse_number(fourth_pokemon),
+    fifth_pokemon = parse_number(fifth_pokemon),
+    sixth_pokemon = parse_number(sixth_pokemon)
+  )
+}
+```
+
+```{r}
+#Save results into csv file so we don't need to run the get_tournament_results
+#function very time we run our shiny app.
+stuttgart_results <- get_tournament_results()
+
+stuttgart_results
+
+write.csv(stuttgart_results, "./Data/tournament_results.csv", row.names = FALSE)
+```
+
+
