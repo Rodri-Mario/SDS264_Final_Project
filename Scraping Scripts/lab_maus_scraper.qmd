@@ -28,7 +28,8 @@ get_ith_pokemon <-function(session, index){
     session |> 
       html_elements(css_search) |> 
       html_attr("src") |> 
-      str_extract("pokemon/(\\d+)", group = 1)
+      #Regex to extract National Pokedex Number/Form from image file name
+      str_extract("pokemon/(.+)\\.png", group = 1)
   }
 }
 ```
@@ -36,7 +37,7 @@ get_ith_pokemon <-function(session, index){
 
 ```{r}
 #Function to get the Pokemon VGC tournament results from LabMaus
-#tournament_id - the id of the specific tournamnet on LabMaus
+#tournament_id - the id of the specific tournament on LabMaus
 #defaults to 4805 i.e. Stuttgart Pokémon VGC Regional Championship 2025.
 #up_to_rank - number of teams to get based on how well they performed in the
 #tournament.
@@ -88,12 +89,12 @@ get_tournament_results <- function(tournament_id = 4805, up_to_rank = 50){
     placement = parse_number(placement),
     win = win_loss |> str_split_i("-", 1) |> parse_number(),
     loss = win_loss |> str_split_i("-", 2) |> parse_number(),
-    first_pokemon = parse_number(first_pokemon),
-    second_pokemon = parse_number(second_pokemon),
-    third_pokemon = parse_number(third_pokemon),
-    fourth_pokemon = parse_number(fourth_pokemon),
-    fifth_pokemon = parse_number(fifth_pokemon),
-    sixth_pokemon = parse_number(sixth_pokemon)
+    first_pokemon,
+    second_pokemon,
+    third_pokemon,
+    fourth_pokemon,
+    fifth_pokemon,
+    sixth_pokemon
   )
 }
 ```
