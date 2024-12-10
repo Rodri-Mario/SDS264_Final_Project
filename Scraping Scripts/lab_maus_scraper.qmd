@@ -58,6 +58,11 @@ get_tournament_results <- function(tournament_id = 4805, up_to_rank = 50){
     html_elements(".max-w-\\[1300px\\] td:nth-child(1)") |> 
     html_text()
   
+  #Get Team Owner/Player
+  player <- session |> 
+    html_elements(".max-w-\\[1300px\\] td:nth-child(2)") |> 
+    html_text()
+  
   #Get win/loss data for each team
   win_loss <- session |> 
     html_elements(".max-w-\\[1300px\\] td:nth-child(4)") |> 
@@ -87,6 +92,7 @@ get_tournament_results <- function(tournament_id = 4805, up_to_rank = 50){
   #Combining into one tibble
   tibble(
     placement = parse_number(placement),
+    player, 
     win = win_loss |> str_split_i("-", 1) |> parse_number(),
     loss = win_loss |> str_split_i("-", 2) |> parse_number(),
     first_pokemon,
@@ -95,13 +101,21 @@ get_tournament_results <- function(tournament_id = 4805, up_to_rank = 50){
     fourth_pokemon,
     fifth_pokemon,
     sixth_pokemon
-  )
+  ) |> 
+    #Pivot so that each row represents a single Pokemon instead of a team
+    pivot_longer(first_pokemon:sixth_pokemon, 
+                 names_to = NULL,
+                 values_to = "pokemon"
+    ) |> 
+    #Add in new column to specify any alternate forms since they might need to
+    #be handled separately.
+    mutate(alt_form = str_detect(pokemon, "\\d+-\\w"))
 }
 ```
 
 ```{r}
 #Save results into csv file so we don't need to run the get_tournament_results
-#function very time we run our shiny app.
+#function very time we run our shiny app. 
 stuttgart_results <- get_tournament_results()
 
 stuttgart_results
