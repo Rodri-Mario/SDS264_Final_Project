@@ -1,0 +1,112 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+```{r}
+#Importing libraries
+library(tidyverse)
+library(rvest)
+library(polite)
+library(httr)
+```
+
+```{r}
+get_pokemon_stat <- function(session, index){
+  if(index < 1 | index > 6){
+    stop("Invalid index provided, should be bewteen 1 and 6", call = FALSE)
+  }
+  else{
+    css_search <- str_c(".fooinfo:nth-child(", index + 5, ")")
+    session |> 
+    html_elements(css_search) |> 
+    html_text() |> 
+    parse_number()
+  }
+}
+```
+
+```{r}
+get_national_dex <- function(){
+  #Initialize session
+  session <- read_html_live("https://www.serebii.net/pokemon/nationalpokedex.shtml")
+  
+  #wait for the page to fully load/run javascript
+  Sys.sleep(10)
+  
+  #Get the National Dex Number of each Pokemon in the team
+  pokemon <- session |> 
+    html_elements(".fooinfo:nth-child(1)") |> 
+    html_text() |> 
+    parse_number()
+  
+  #Get the name of each Pokemon   
+  name <- session |> 
+    html_elements(".fooinfo:nth-child(3)") |> 
+    html_text() |>
+    str_trim() |> 
+    str_to_lower()
+  
+  #Get the Pokemon Types
+  #Select Type Column in table (entries are are either one or two links which 
+  #which represents the typing of the Pokemon).
+  type_col <- session |> html_elements(".fooinfo:nth-child(4)")
+  
+  #Create vectors to hold type data
+  type1 <- character(length(type_col))
+  type2 <- character(length(type_col))
+  
+  #For each entry in type_col, if it has assign the 1st link to type 1
+  #if there is a second link assign to type2, otherwise is NA.
+  for(i in seq_along(type_col)){
+    types <- type_col[[i]] |> 
+      html_elements("a") |> 
+      html_attr("href") |> 
+      str_extract("type/(\\w+)", group = 1) #regex to extract type from link
+    
+    type1[[i]] <- types[1]
+    type2[[i]] <- if_else(length(types) == 2, types[2], NA)
+  }
+  #Get the 6 stats of a pokemon
+  hp <- session |> 
+    get_pokemon_stat(1)
+    
+  attack <- session |> 
+    get_pokemon_stat(2)
+    
+  defense <- session |> 
+    get_pokemon_stat(3)
+  
+  sp_atk <- session |> 
+    get_pokemon_stat(4)
+    
+  sp_def <- session |> 
+    get_pokemon_stat(5)
+    
+  speed <- session |> 
+    get_pokemon_stat(6)
+  
+  tibble(
+    pokemon,
+    name, 
+    type1,
+    type2,
+    hp,
+    attack,
+    defense,
+    sp_atk,
+    sp_def,
+    speed
+  )
+}
+```
+
+
+```{r}
+national_dex <- get_national_dex()
+
+national_dex
+
+write.csv(national_dex, "./Data/national_dex.csv", row.names = FALSE)
+```
+
