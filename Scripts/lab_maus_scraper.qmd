@@ -29,7 +29,7 @@ get_ith_pokemon <-function(session, index){
       html_elements(css_search) |> 
       html_attr("src") |> 
       #Regex to extract National Pokedex Number/Form from image file name
-      str_extract("pokemon/(.+)\\.png", group = 1)
+      str_extract("pokemon/0*(.+)\\.png", group = 1)
   }
 }
 ```
