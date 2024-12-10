@@ -1,0 +1,57 @@
+---
+title: "Into Analysis"
+output: html_document
+date: "2024-12-10"
+---
+
+```{r}
+library(tidyverse)
+```
+
+
+```{r}
+tournament_results <- tournament_results %>%
+  mutate(pokemon = str_extract(pokemon, "\\d\\d\\d(\\d)?"),
+         pokemon = str_extract(pokemon, "[1-9]?\\d\\d(\\d)?"))
+```
+
+```{r}
+tournament_results$pokemon <- as.character(tournament_results$pokemon)
+national_dex$pokemon <- as.character(national_dex$pokemon)
+```
+
+
+```{r}
+fulldata <- tournament_results %>%
+  left_join(national_dex)
+```
+
+```{r}
+fulldata %>%
+  group_by(player) %>%
+  mutate(sum_hp = sum(hp)) %>%
+  slice_head() %>%
+  select(player, sum_hp)
+```
+```{r}
+mean(national_dex$hp)
+```
+
+```{r}
+type1 <- fulldata %>%
+  group_by(player) %>%
+  count(type1) %>%
+  ungroup() %>%
+  count(type1, sort = T)
+```
+
+```{r}
+type2 <- fulldata %>%
+  group_by(player) %>%
+  count(type2) %>%
+  ungroup() %>%
+  count(type2, sort = T)
+```
+
+
+
