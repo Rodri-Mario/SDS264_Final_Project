@@ -1,0 +1,56 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+```{r}
+library(tidyverse)
+```
+
+```{r}
+#import dataset
+
+tournament_results <- read_csv("./Data/tournament_results.csv")
+
+national_dex <- read.csv("./Data/national_dex.csv")
+
+```
+
+```{r}
+tournament_results |> 
+  filter(alt_form == T) |> 
+  group_by(pokemon) |> 
+  count()
+```
+
+```{r}
+alt_forms <- 
+```
+
+
+```{r}
+national_dex |> 
+  mutate(pokemon = as.character(pokemon)) |> 
+  right_join(tournament_results, by = "pokemon") |> 
+  pivot_longer(type1:type2, names_to = NULL, values_to = "type" ) |> 
+  filter(!is.na(type)) |>
+  count(type) |> 
+  mutate(type = fct_reorder(type, n)) |> 
+  ggplot(aes(x = type, y = n, fill = type)) +
+  geom_col() + 
+  coord_flip()
+```
+
+```{r}
+national_dex |> 
+  mutate(pokemon = as.character(pokemon)) |> 
+  right_join(tournament_results, by = "pokemon") |> 
+  pivot_longer(type1:type2, names_to = NULL, values_to = "type" ) |> 
+  filter(!is.na(type), placement <= 10) |> 
+  view()
+  ggplot(aes(x = player, fill = type)) + 
+  geom_bar() + 
+  coord_flip()
+```
+
+
