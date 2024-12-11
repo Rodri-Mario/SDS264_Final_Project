@@ -8,16 +8,30 @@ date: "2024-12-10"
 library(tidyverse)
 ```
 
+```{r}
+custompal <- c("seagreen", "gray21", "paleturquoise3", "yellow1", "violetred3", "tomato4", "firebrick2", "lightcyan3", "purple4", "lightgreen", "burlywood3", "cadetblue1", "lightpink2", "mediumpurple2", "mediumvioletred", "saddlebrown", "turquoise3", "blue")
+```
+
+
 
 ```{r}
 tournament_results <- tournament_results %>%
-  mutate(pokemon = str_extract(pokemon, "\\d\\d\\d(\\d)?"),
-         pokemon = str_extract(pokemon, "[1-9]?\\d\\d(\\d)?"))
+  mutate(pokemon = str_extract(pokemon, "\\d\\d(\\d)?(\\d)?"), 
+         pokemon = parse_number(pokemon))
 ```
 
 ```{r}
 tournament_results$pokemon <- as.character(tournament_results$pokemon)
 national_dex$pokemon <- as.character(national_dex$pokemon)
+```
+
+```{r}
+TypeChart <- read_csv("~/TypeChart.csv")
+```
+
+```{r}
+TypeChart <- TypeChart %>%
+rename("Attack" = "...1")
 ```
 
 
@@ -29,12 +43,16 @@ fulldata <- tournament_results %>%
 ```{r}
 fulldata %>%
   group_by(player) %>%
-  mutate(sum_hp = sum(hp)) %>%
+  mutate(sum = sum(speed)) %>%
   slice_head() %>%
-  select(player, sum_hp)
+  select(player, sum) %>%
+  ggplot(aes(x = player, y = sum)) + 
+  geom_col() + 
+  geom_hline(yintercept = mean(national_dex$speed) * 6, color = "red") + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))  
 ```
 ```{r}
-mean(national_dex$hp)
+mean(national_dex$hp) * 6
 ```
 
 ```{r}
@@ -42,7 +60,8 @@ type1 <- fulldata %>%
   group_by(player) %>%
   count(type1) %>%
   ungroup() %>%
-  count(type1, sort = T)
+  count(type1, sort = T) %>%
+  rename("type" = "type1")
 ```
 
 ```{r}
@@ -50,8 +69,45 @@ type2 <- fulldata %>%
   group_by(player) %>%
   count(type2) %>%
   ungroup() %>%
-  count(type2, sort = T)
+  count(type2, sort = T) %>%
+  rename("type" = "type2")
 ```
 
+```{r}
+types <- type1 %>%
+  full_join(type2) %>%
+  group_by(type) %>%
+  mutate(sum = sum(n)) %>%
+  slice_head() %>%
+  select(-n) %>%
+  ungroup()
+  
+types <- na.omit(types)
 
+types <- arrange(types, desc(sum)) 
+
+types %>%
+  ggplot(aes(x = type, y = sum, fill = type)) +
+  geom_col() + 
+  scale_fill_manual(values = custompal) + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+```{r}
+fulldata %>%
+  count(name, sort = T) %>%
+  left_join(national_dex) %>%
+  select(name, n, type1, type2)
+```
+
+```{r}
+TypeChart %>%
+  group_by(TypeChart$Attack) %>% 
+  mutate(sum_of_attacks = Normal + Fire + Water + Electric + Grass + Ice + Fighting + Poison + Ground + Flying + Psychic + Bug + Rock + Ghost + Dragon + Dark + Steel + Fairy)
+```
+```{r}
+TypeChart %>%
+  group_by(Attack) %>%
+  filter(Normal == 0)
+```
 
