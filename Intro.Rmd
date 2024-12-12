@@ -6,6 +6,7 @@ date: "2024-12-10"
 
 ```{r}
 library(tidyverse)
+library(data.table)
 ```
 
 ```{r}
@@ -41,16 +42,47 @@ fulldata <- tournament_results %>%
 ```
 
 ```{r}
+gettopstats <- function(keystat){
+{{national_dex}} %>%
+  select(name, keystat) %>%
+  sort_by(keystat)
+}
+```
+
+```{r}
+gettopstats("hp")
+```
+
+
+```{r}
 fulldata %>%
   group_by(player) %>%
-  mutate(sum = sum(speed)) %>%
+  mutate(sum = sum(speed)) 
+```
+
+
+```{r}
+getstathist <- function(statistic){
+statistic <- statistic
+fulldata %>%
+  group_by(player) %>%
+  mutate(sum = sum(statistic))  
+}
+```
+
+%>%
   slice_head() %>%
   select(player, sum) %>%
   ggplot(aes(x = player, y = sum)) + 
   geom_col() + 
-  geom_hline(yintercept = mean(national_dex$speed) * 6, color = "red") + 
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))  
+  geom_hline(yintercept = mean(national_dex$statistic) * 6, color = "red") + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```{r}
+getstathist(hp)
 ```
+
+
 ```{r}
 mean(national_dex$hp) * 6
 ```
@@ -111,7 +143,7 @@ TypeChart %>%
   filter(Normal == 0)
 ```
 ```{r}
-TypeChart %>%
+Typechart2 <- TypeChart %>%
   group_by(TypeChart$Attack) %>% 
   mutate(sum_of_attacks = Normal + Fire + Water + Electric + Grass + Ice + Fighting +                                Poison + Ground + Flying + Psychic + Bug + 
                           Rock + Ghost + Dragon + Dark + Steel + Fairy) %>%
@@ -120,13 +152,18 @@ TypeChart %>%
   mutate(Attack = tolower(Attack)) %>%
   rename("type" = "Attack") %>%
   left_join(types) %>%
-  mutate(sum = replace_na(sum, 9)) %>%
-  ggplot(aes(x = sum, y = sum_of_attacks)) +
+  mutate(sum = replace_na(sum, 9))
+
+Typechart2[order(Typechart2$type),] %>%
+  ggplot(aes(x = sum, y = sum_of_attacks, color = type)) +
   geom_point() +
-  geom_smooth(method = lm, se = F)
+  geom_smooth(method = lm, se = F) + 
+  scale_color_manual(values = custompal)
 ```
 
 ```{r}
-
+TypeChart %>%
+ filter(Attack == "Fire")
+  
 ```
 
