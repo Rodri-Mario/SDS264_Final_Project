@@ -24,8 +24,14 @@ tournament_results |>
 ```
 
 ```{r}
-alt_forms <- 
+national_dex_forms <- national_dex |> 
+  mutate(alt_form = NA) |> 
+  rbind(missing_forms) |> 
+  sort(pokemon)
+
+national_dex_forms
 ```
+
 
 
 ```{r}
