@@ -120,7 +120,7 @@ stuttgart_results <- get_tournament_results()
 
 stuttgart_results
 
-write.csv(stuttgart_results, "./Data/tournament_results.csv", row.names = FALSE)
+write.csv(stuttgart_results, "./Data/tournament_results_raw.csv", row.names = FALSE)
 ```
 
 

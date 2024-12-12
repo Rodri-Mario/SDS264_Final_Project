@@ -107,6 +107,6 @@ national_dex <- get_national_dex()
 
 national_dex
 
-write.csv(national_dex, "./Data/national_dex.csv", row.names = FALSE)
+write.csv(national_dex, "./Data/national_dex_raw.csv", row.names = FALSE)
 ```
 

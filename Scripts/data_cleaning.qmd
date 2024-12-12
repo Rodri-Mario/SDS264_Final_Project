@@ -1,0 +1,80 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+#import datasets
+
+#Tournament results from scraper
+tournament_results <- read_csv("./Data/tournament_results.csv")
+
+#National dex information from scraper
+national_dex <- read.csv("./Data/national_dex.csv")
+
+#National dex information about the forms that where used in tournament_results
+#but not found in national_dex.
+#Gathered by hand by checking individual pokedex entries
+missing_forms <- read.csv("./Data/")
+
+```
+
+```{r}
+#Check which pokemon needed to have thier alt_form data gathered
+tournament_results |> 
+  filter(alt_form == T) |> 
+  group_by(pokemon) |> 
+  count()
+```
+
+```{r}
+#Format national_dex results to be easily joined with tournament results
+#and also adding the information on the alt forms found in tournament results
+national_dex_forms <- national_dex |> 
+  mutate(alt_form = NA) |> 
+  rbind(missing_forms) |>
+  arrange(pokemon)
+
+national_dex_forms
+```
+
+```{r}
+#Format tournament results to be easily joined with national dex information
+#while keeping form information
+tournament_results_forms <- tournament_results |> 
+  mutate(#New column that has the name of the alternate form
+         #If pokemon has an alt_form, then the value is the full name of the alt
+         #form.
+         #Else let value be NA
+         alt_form_name = if_else(alt_form, 
+                            #Get character that serves as alt_form indicator and
+                            #translate that to the full name of the alt form.
+                            case_match(str_extract(pokemon, "-(\\w)", group = 1),
+                                   "a" ~ "alolan",
+                                   "g" ~ "galarian",
+                                   "h" ~ "hisuian",
+                                   "f" ~ "female",
+                                   "b" ~ "bloodmoon"
+                            ),
+                            NA
+                    ),
+         #remove alt_form indicator from pokemon
+         pokemon = parse_number(pokemon)
+  )
+
+tournament_results_forms
+```
+
+```{r}
+#Save results to csv
+write.csv(national_dex_forms, "./Data/national_dex_forms.csv", row.names = FALSE)
+
+write.csv(tournament_results_forms, "./Data/tournament_results_forms.csv", row.names = FALSE)
+
+```
+

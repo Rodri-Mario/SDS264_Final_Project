@@ -1,9 +1,9 @@
-﻿pokemon,name,type1,type2,hp,attack,defense,sp_atk,sp_def,speed,alt_form
-110,Galarian Weezing,poison,fairy,65,90,120,85,70,60,Galarian
-157,Hisuian Typhlosion,fire,ghost,73,84,78,119,85,95,Hisuian
-38,Aloan Ninetails,ice,fairy,73,67,75,81,100,109,Alolan
-549,Hisuian Lilligant,grass,fighting,70,105,75,50,75,105,Hisuian
-571,Hisuian Zoroark,normal,ghost,55,100,60,125,60,110,Hisuian
-59,Hisuian Arcanine,fire,rock,95,115,80,95,80,90,Hisuian
-876,Female Indeedee,psychic,normal,70,55,65,95,105,85,Female
-901,Bloodmoon Ursaluna,ground,normal,113,70,120,135,65,52,Bloodmoon
+pokemon,name,type1,type2,hp,attack,defense,sp_atk,sp_def,speed,alt_form
+110,galarian weezing,poison,fairy,65,90,120,85,70,60,galarian
+157,hisuian typhlosion,fire,ghost,73,84,78,119,85,95,hisuian
+38,aloan ninetails,ice,fairy,73,67,75,81,100,109,alolan
+549,hisuian lilligant,grass,fighting,70,105,75,50,75,105,hisuian
+571,hisuian zoroark,normal,ghost,55,100,60,125,60,110,hisuian
+59,hisuian arcanine,fire,rock,95,115,80,95,80,90,hisuian
+876,female indeedee,psychic,normal,70,55,65,95,105,85,female
+901,bloodmoon ursaluna,ground,normal,113,70,120,135,65,52,bloodmoon
