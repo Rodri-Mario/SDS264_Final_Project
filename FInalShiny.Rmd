@@ -56,6 +56,22 @@ fulldata <- tournament_results %>%
   left_join(national_dex)
 ```
 
+Pokemon Stats
+==========================
+```{r}
+inputPanel(
+  selectInput("stat", label = "Key Statistic:",
+              choices = c("Health points" = "hp","Attack" = "attack","Defense" = "defense", "Special Attack" = "sp_atk","Special Defense" = "sp_def","Speed" = "speed"))
+)
+
+renderTable({
+  national_dex_forms %>%
+  arrange(desc(.data[[input$stat]])) %>%
+  slice_head(n = 10) %>%
+  select(name, .data[[input$stat]])
+})
+```
+
 
 Pokemon Team Stats
 ==========================
@@ -119,3 +135,17 @@ renderPlot({
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 })
 ```
+
+Weaknesses 
+======================
+
+```{r}
+tournament_results |> 
+  left_join(national_dex, join_by(pokemon, alt_form_name == alt_form)) |> 
+  pivot_longer(type1:type2, names_to = NULL, values_to = "type" ) |> 
+  filter(!is.na(type), placement <= 10) |> 
+  mutate(type = fct_infreq(type))
+  
+```
+
+
