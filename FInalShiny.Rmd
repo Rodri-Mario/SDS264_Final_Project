@@ -12,37 +12,30 @@ output:
 #| echo: false
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
-library(readr)
-library(stringr)
-library(rvest)
-library(httr)
-library(ggplot2)
-library(readr)
-library(plotly)
 library(flexdashboard)
 library(ggthemes)
 library(shinyWidgets)
-library(reshape2)
-library(gt)
 ```
 
 ```{r}
 #| echo: false
-national_dex <- read_csv("Data/national_dex_raw.csv")
-tournament_results <- read_csv("Data/tournament_results_raw.csv")
 TypeChart <- read_csv("Data/TypeChart.csv")
 national_dex_forms <- read_csv("Data/national_dex_forms.csv")
 tournament_results_forms <- read_csv("Data/tournament_results_forms.csv")
 ```
 
-
 ```{r}
 #| echo: false
-tournament_results <- tournament_results %>%
-  mutate(pokemon = str_extract(pokemon, "\\d\\d(\\d)?(\\d)?"), 
-         pokemon = parse_number(pokemon))
+type_colors <- c("#9fa19f", "#f08500", "#8eb7f2", "#8b3ecf", "#89531a", "#adaa7e",
+               "#92a200", "#6b4172", "#6ea0b9", "#d63624", "#497cf3", "#54a113",
+               "#f8d800", "#df497a", "#6ed6ff", "#595ce5", "#494949", "#f0a6d6"
+               )
+names(type_colors) = c("normal", "fighting", "flying", "poison", "ground", "rock",
+                       "bug", "ghost", "steel", "fire", "water", "grass",
+                       "electric", "psychic", "ice", "dragon", "dark", "fairy")
 ```
 
+<<<<<<< HEAD
 ```{r}
 #| echo: false
 tournament_results$pokemon <- as.character(tournament_results$pokemon)
@@ -73,6 +66,8 @@ renderTable({
 ```
 
 
+=======
+>>>>>>> 4e71ed93f170293565e9b718dc89553c9de7d14d
 Pokemon Team Stats
 ==========================
 
@@ -98,7 +93,7 @@ renderPlot({
   {if(input$type != "overall") filter(., type1 == input$type | type2 == input$type) else .} |>  
   slice_max(n, n = 25) |> 
   mutate(name = fct_reorder(name, n)) |> 
-  ggplot(aes(x = name, y = n)) + 
+  ggplot(aes(x = name, y = n), fill = input$type) + 
   geom_col() +
   coord_flip()
 })
@@ -121,9 +116,6 @@ Row
 
 ```{r, echo=FALSE}
 renderPlot({  
-
-  value <- national_dex %>% mean(.data[input$stat])
-    
   tournament_results_forms |> 
   left_join(national_dex_forms, join_by(pokemon, alt_form_name == alt_form)) %>% 
   group_by(player) %>%
@@ -131,7 +123,7 @@ renderPlot({
   slice_head() %>%
   ggplot(aes(x = player, y = sum)) + 
   geom_col() + 
-  geom_hline(yintercept = value * 6, color = "red") + 
+  geom_hline(yintercept = mean(national_dex_forms[[input$stat]]) * 6, color = "red") + 
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 })
 ```
