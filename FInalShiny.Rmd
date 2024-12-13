@@ -15,6 +15,8 @@ library(tidyverse)
 library(flexdashboard)
 library(ggthemes)
 library(shinyWidgets)
+library(kableExtra)
+library(gt)
 ```
 
 ```{r}
@@ -52,7 +54,8 @@ renderTable({
   national_dex %>%
   arrange(desc(.data[[input$stat]])) %>%
   slice_head(n = 10) %>%
-  select(name, .data[[input$stat]])
+  select(name, .data[[input$stat]]) %>%
+  gt()
 })
 ```
 
@@ -80,7 +83,8 @@ national_dex %>%
   mutate(num_characters = nchar(name)) %>%
   arrange(desc(num_characters)) %>%
   filter(num_characters == input$adjust) %>%
-  select(name, num_characters)
+  select(name) %>%
+    gt()
 })
 ```
 
@@ -135,16 +139,32 @@ renderPlot({
 })
 ```
 
-Weaknesses 
+Type Analysis 
 ======================
 
 ```{r}
+Typechart2 <- TypeChart %>%
+  group_by(...1) %>% 
+  mutate(sum_of_attacks = Normal + Fire + Water + Electric + Grass + Ice + Fighting +                                Poison + Ground + Flying + Psychic + Bug + 
+                          Rock + Ghost + Dragon + Dark + Steel + Fairy) %>%
+  ungroup() %>%
+  select(...1, sum_of_attacks) %>%
+  mutate(...1 = tolower(...1)) %>%
+  rename("type" = "...1") 
+
+renderPlot({
 tournament_results |> 
   left_join(national_dex, join_by(pokemon, alt_form_name == alt_form)) |> 
   pivot_longer(type1:type2, names_to = NULL, values_to = "type" ) |> 
-  filter(!is.na(type), placement <= 10) |> 
-  mutate(type = fct_infreq(type))
-  
+  filter(!is.na(type)) |> 
+  mutate(type = fct_infreq(type)) %>% 
+  count(type) %>%
+  right_join(Typechart2) %>%
+   ggplot(aes(x = n, y = sum_of_attacks)) +
+  geom_point(aes(color = type)) +
+  geom_smooth(method = lm, se = F) + 
+  scale_color_manual(values = type_colors)
+})
 ```
 
 
