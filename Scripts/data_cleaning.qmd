@@ -12,15 +12,15 @@ library(tidyverse)
 #import datasets
 
 #Tournament results from scraper
-tournament_results <- read_csv("./Data/tournament_results.csv")
+tournament_results <- read_csv("./Data/tournament_results_raw.csv")
 
 #National dex information from scraper
-national_dex <- read.csv("./Data/national_dex.csv")
+national_dex <- read.csv("./Data/national_dex_raw.csv")
 
 #National dex information about the forms that where used in tournament_results
 #but not found in national_dex.
 #Gathered by hand by checking individual pokedex entries
-missing_forms <- read.csv("./Data/")
+missing_forms <- read.csv("./Data/missing_tournament_forms.csv")
 
 ```
 
