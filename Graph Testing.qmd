@@ -1,0 +1,70 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+```{r}
+library(tidyverse)
+```
+
+```{r}
+#import dataset
+
+tournament_results <- read_csv("./Data/tournament_results_forms.csv")
+
+national_dex <- read.csv("./Data/national_dex_forms.csv")
+```
+
+```{r}
+tournament_results |> 
+  left_join(national_dex, join_by(pokemon, alt_form_name == alt_form))
+```
+
+#Define Colors
+```{r}
+type_colors <- c("#9fa19f", "#f08500", "#8eb7f2", "#8b3ecf", "#89531a", "#adaa7e",
+               "#92a200", "#6b4172", "#6ea0b9", "#d63624", "#497cf3", "#54a113",
+               "#f8d800", "#df497a", "#6ed6ff", "#595ce5", "#494949", "#f0a6d6"
+               )
+names(type_colors) = c("normal", "fighting", "flying", "poison", "ground", "rock",
+                       "bug", "ghost", "steel", "fire", "water", "grass",
+                       "electric", "psychic", "ice", "dragon", "dark", "fairy")
+```
+
+#Team Type Composition for Top 10 teams
+```{r}
+tournament_results |> 
+  left_join(national_dex, join_by(pokemon, alt_form_name == alt_form)) |> 
+  pivot_longer(type1:type2, names_to = NULL, values_to = "type" ) |> 
+  filter(!is.na(type), placement <= 10) |> 
+  mutate(type = fct_infreq(type)) |> 
+  ggplot(aes(x = player, fill = type)) + 
+  geom_bar(color = "white", linewidth = 1) + 
+  scale_fill_manual(values = type_colors)+
+  coord_flip()
+```
+
+#Most Used Pokemon
+```{r}
+tournament_results |> 
+  left_join(national_dex, join_by(pokemon, alt_form_name == alt_form)) |>
+  count(pokemon, name, type1, type2) |> 
+  slice_max(n, n = 25) |> 
+  mutate(name = fct_reorder(name, n)) |> 
+  ggplot(aes(x = name, y = n)) + 
+  geom_col() +
+  coord_flip()
+```
+
+#Most Used pokemon of specific type
+```{r}
+tournament_results |> 
+  left_join(national_dex, join_by(pokemon, alt_form_name == alt_form)) |>
+  count(pokemon, name, type1, type2) |> 
+  filter(type1 == "fairy" | type2 == "fairy") |> 
+  slice_max(n, n = 25) |> 
+  mutate(name = fct_reorder(name, n)) |> 
+  ggplot(aes(x = name, y = n)) + 
+  geom_col() +
+  coord_flip()
+```
