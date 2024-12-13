@@ -41,12 +41,45 @@ inputPanel(
   selectInput("stat", label = "Key Statistic:",
               choices = c("Health points" = "hp","Attack" = "attack","Defense" = "defense", "Special Attack" = "sp_atk","Special Defense" = "sp_def","Speed" = "speed"))
 )
+```
 
+Row 
+-------------------------
+
+```{r}
 renderTable({
   national_dex %>%
   arrange(desc(.data[[input$stat]])) %>%
   slice_head(n = 10) %>%
   select(name, .data[[input$stat]])
+})
+```
+
+```{r}
+renderPlot({
+national_dex %>%
+  pivot_longer(type1:type2, names_to = NULL, values_to = "type" ) %>%
+  filter(!is.na(type)) %>%
+  count(type, sort = T) %>%
+  ggplot(aes(x = type, y = n, fill = type)) +
+  geom_col() + 
+  scale_fill_manual(values = type_colors)  + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+  labs(title = "Frequency of each type across all pokemon", x = "Type", y = "Frequency")
+})
+```
+
+```{r}
+inputPanel(
+  sliderInput("adjust", label = "Adjustment:",
+              min = 3, max = 18, value = 1, step = 1)
+)
+renderTable({
+national_dex %>%
+  mutate(num_characters = nchar(name)) %>%
+  arrange(desc(num_characters)) %>%
+  filter(num_characters == input$adjust) %>%
+  select(name, num_characters)
 })
 ```
 
