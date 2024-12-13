@@ -73,7 +73,7 @@ tournament_results |>
 tournament_results_forms |> 
   left_join(national_dex_forms, join_by(pokemon, alt_form_name == alt_form)) %>% 
   group_by(player) %>%
-  mutate(sum = sum([["hp"]])) %>%
+  mutate(sum = sum(.data[["hp"]])) %>%
   slice_head() %>%
   ggplot(aes(x = player, y = sum)) + 
   geom_col() + 
