@@ -12,6 +12,7 @@ output:
 ```{r}
 #| echo: false
 library(tidyverse)
+library(plotly)
 library(flexdashboard)
 library(ggthemes)
 library(shinyWidgets)
@@ -87,16 +88,17 @@ national_dex %>%
 
 Competitive Analysis
 ==========================
-### Most Common Pokemon by Type {data-padding=10}
+Column
+-----
 ```{r}
 #| echo: false
 inputPanel(
   selectInput(inputId = "type", 
               label = "Type: ", 
-              choices = c("overall", "normal", "fighting", "flying", "poison", "ground", "rock",
-                       "bug", "ghost", "steel", "fire", "water", "grass",
-                       "electric", "psychic", "ice", "dragon", "dark", "fairy"),
-              selected = "overall"
+              choices = c("Overall", "Normal", "Fighting", "Flying", "Poison", "Ground", "Rock",
+                       "Bug", "Ghost", "Steel", "Fire", "Water", "Grass",
+                       "Electric", "Psychic", "Ice", "Dragon", "Dark", "Fairy"),
+              selected = "Overall"
   )
 )
 
@@ -104,23 +106,33 @@ renderPlot({
   tournament_results |> 
   left_join(national_dex, join_by(pokemon, alt_form_name == alt_form)) |>
   count(pokemon, name, type1, type2) %>%
-  {if(input$type != "overall") filter(., type1 == input$type | type2 == input$type) else .} |>  
+  {if(input$type != "Overall") 
+    filter(., type1 == str_to_lower(input$type) | type2 == str_to_lower(input$type)) 
+    else
+      .}|>  
   slice_max(n, n = 25) |> 
   mutate(name = fct_reorder(name, n)) |> 
   ggplot(aes(x = name, y = n), fill = input$type) + 
   geom_col() +
-  coord_flip()
+  coord_flip() +
+  labs(
+    title = str_c("Most Commonly Used ", input$type, " Pokemon"),
+    x = "Pokemon",
+    y = "Times Present on a Team"
+  )
 })
 
 ```
 
-### Total Team Stats vs Expected Total
+Column
+---
 ```{r}
 #| echo: false
 inputPanel(
   selectInput("stat", label = "Key Statistic:",
               choices = c("Health points" = "hp","Attack" = "attack","Defense" = "defense", "Special Attack" = "sp_atk","Special Defense" = "sp_def","Speed" = "speed"))
 )
+
 
 renderPlot({  
   tournament_results |> 
@@ -131,7 +143,13 @@ renderPlot({
   ggplot(aes(x = player, y = sum)) + 
   geom_col() + 
   geom_hline(yintercept = mean(national_dex[[input$stat]]) * 6, color = "red") + 
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(
+    title = str_c("Sum of the ", names(input$stat), " Stats of Pokemon on a Team"),
+    subtitle = str_c("Red Line Represents Avg ", input$stat, " Stat Across All Pokemon Times 6"),
+    x = "Player",
+    y = str_c("Total ", input$stat, " Stat for the Team")
+  )
 })
 ```
 
