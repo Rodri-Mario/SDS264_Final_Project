@@ -7,8 +7,20 @@ runtime: shiny
 ---
 
 ```{r}
+knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(readr)
+library(stringr)
+library(rvest)
+library(httr)
+library(ggplot2)
+library(readr)
+library(plotly)
+library(flexdashboard)
+library(ggthemes)
+library(shinyWidgets)
+library(reshape2)
+library(gt)
 ```
 
 ```{r}
@@ -38,19 +50,30 @@ fulldata <- tournament_results %>%
 ```{r eruptions, echo=FALSE}
 inputPanel(
   selectInput("stat", label = "Key Statistic:",
-              choices = c("hp", "attack", "defense", "sp_atk", "sp_def", "speed"), selected = "hp")
+              choices = c("Health points" ="hp","Attack" = "attack","Defense" = "defense", "Special Attack" = "sp_atk","Special Defense" = "sp_def","Speed" = "speed"), selected = "hp")
 )
 
-renderPlot({
-fulldata %>%
+renderPlot({   
+  fulldata %>% 
   group_by(player) %>%
-  mutate(sum = sum(stat)) %>%
+  mutate(sum = sum(input$stat)) %>%
   slice_head() %>%
   select(player, sum) %>%
-  ggplot(aes(x = player, y = sum)) + 
-  geom_col() + 
-  geom_hline(yintercept = mean(national_dex$stat) * 6, color = "red") + 
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))  
+   plot_ly(x = ~player, y = ~.data[[input$stat]], type = 'bar', color = ~ player, height = 440) %>%
+      layout(xaxis = list(title = "Player"),
+             yaxis = list(title = if (input$y == "hp")
+                                     "Health Points"
+                                  else if (input$y == "attack")
+                                     "Attack"
+                                  else if (input$y == "defense")
+                                     "Defense"
+                                  else if (input$y == "sp_atk")
+                                     "Special Attack"
+                                  else if (input$y == "sp_def")
+                                     "Special Defense"
+                                  else if (input$y == "speed")
+                                     "Speed"
+                                  ), title = "Key stats total of ")
 })
 ```
 

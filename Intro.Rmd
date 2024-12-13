@@ -42,15 +42,39 @@ fulldata <- tournament_results %>%
 ```
 
 ```{r}
-gettopstats <- function(keystat){
-{{national_dex}} %>%
-  select(name, keystat) %>%
-  sort_by(keystat)
-}
+national_dex %>%
+  arrange(desc(hp)) %>%
+  slice_head(n = 10)
 ```
 
 ```{r}
-gettopstats("hp")
+national_dex %>%
+  arrange(desc(attack)) %>%
+  slice_head(n = 10)
+```
+
+```{r}
+national_dex %>%
+  arrange(desc(defense)) %>%
+  slice_head(n = 10)
+```
+
+```{r}
+national_dex %>%
+  arrange(desc(sp_atk)) %>%
+  slice_head(n = 10)
+```
+
+```{r}
+national_dex %>%
+  arrange(desc(sp_def)) %>%
+  slice_head(n = 10)
+```
+
+```{r}
+national_dex %>%
+  arrange(desc(speed)) %>%
+  slice_head(n = 10)
 ```
 
 
@@ -66,7 +90,9 @@ getstathist <- function(statistic){
 statistic <- statistic
 fulldata %>%
   group_by(player) %>%
-  mutate(sum = sum(statistic))  
+  mutate(sum = sum()) %>%
+  slice_head() %>%
+  select(player, sum) 
 }
 ```
 
@@ -164,6 +190,5 @@ Typechart2[order(Typechart2$type),] %>%
 ```{r}
 TypeChart %>%
  filter(Attack == "Fire")
-  
 ```
 
