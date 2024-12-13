@@ -2,8 +2,10 @@
 title: "Pokemon Tournament Analysis"
 author: "Jackson Marsh and Mario Rodriguez"
 date: "2024-12-11"
-output: html_document
 runtime: shiny
+output: 
+  flexdashboard::flex_dashboard:
+      theme: yeti
 ---
 
 ```{r}
@@ -24,8 +26,8 @@ library(gt)
 ```
 
 ```{r}
-national_dex <- read_csv("Data/national_dex.csv")
-tournament_results <- read_csv("Data/tournament_results.csv")
+national_dex <- read_csv("Data/national_dex_raw.csv")
+tournament_results <- read_csv("Data/tournament_results_raw.csv")
 TypeChart <- read_csv("~/TypeChart.csv")
 ```
 
@@ -49,31 +51,20 @@ fulldata <- tournament_results %>%
 
 ```{r eruptions, echo=FALSE}
 inputPanel(
-  selectInput("stat", label = "Key Statistic:",
-              choices = c("Health points" ="hp","Attack" = "attack","Defense" = "defense", "Special Attack" = "sp_atk","Special Defense" = "sp_def","Speed" = "speed"), selected = "hp")
+  selectInput("y", label = "Key Statistic:",
+              choices = c("Health points" ="hp","Attack" = "attack","Defense" = "defense", "Special Attack" = "sp_atk","Special Defense" = "sp_def","Speed" = "speed"))
 )
 
 renderPlot({   
-  fulldata %>% 
+  fulldata <- fulldata %>% 
   group_by(player) %>%
-  mutate(sum = sum(input$stat)) %>%
+  mutate(sum = sum(.data[[input$y]])) %>%
   slice_head() %>%
-  select(player, sum) %>%
-   plot_ly(x = ~player, y = ~.data[[input$stat]], type = 'bar', color = ~ player, height = 440) %>%
-      layout(xaxis = list(title = "Player"),
-             yaxis = list(title = if (input$y == "hp")
-                                     "Health Points"
-                                  else if (input$y == "attack")
-                                     "Attack"
-                                  else if (input$y == "defense")
-                                     "Defense"
-                                  else if (input$y == "sp_atk")
-                                     "Special Attack"
-                                  else if (input$y == "sp_def")
-                                     "Special Defense"
-                                  else if (input$y == "speed")
-                                     "Speed"
-                                  ), title = "Key stats total of ")
+  select(player, sum) 
+  
+  ggplot(fulldata, aes(x = player, y = .data[[input$y]])) + 
+  geom_col() + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 })
 ```
 
