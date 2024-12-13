@@ -49,26 +49,38 @@ fulldata <- tournament_results %>%
   left_join(national_dex)
 ```
 
-```{r eruptions, echo=FALSE}
+Pokemon Team Stats
+==========================
+
+Row 
+-------------------------
+
+```{r, echo=FALSE}
 inputPanel(
   selectInput("y", label = "Key Statistic:",
-              choices = c("Health points" ="hp","Attack" = "attack","Defense" = "defense", "Special Attack" = "sp_atk","Special Defense" = "sp_def","Speed" = "speed"))
+              choices = c("Health points" = "hp","Attack" = "attack","Defense" = "defense", "Special Attack" = "sp_atk","Special Defense" = "sp_def","Speed" = "speed"))
 )
+```
 
-renderPlot({   
-  fulldata <- fulldata %>% 
-  group_by(player) %>%
-  mutate(sum = sum(.data[[input$y]])) %>%
-  slice_head() %>%
-  select(player, sum) 
+Row 
+-------------------------
+
+```{r, echo=FALSE}
+renderPlot({  
   
-  ggplot(fulldata, aes(x = player, y = .data[[input$y]])) + 
+  value <- national_dex %>%
+    mean(hp)
+  
+fulldata %>%
+  group_by(player) %>%
+  mutate(sum = sum(hp)) %>%
+  slice_head() %>%
+  select(player, sum) %>%
+  ggplot(aes(x = player, y = sum)) +
   geom_col() + 
+  geom_hline(yintercept = value * 6, color = "red") + 
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 })
 ```
 
-```{r}
-
-```
 
