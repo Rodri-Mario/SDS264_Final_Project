@@ -6,6 +6,7 @@ runtime: shiny
 output: 
   flexdashboard::flex_dashboard:
       theme: yeti
+      vertical_layout: scroll
 ---
 
 ```{r}
@@ -51,12 +52,9 @@ renderTable({
 ```
 
 
-Most Commonly Used Pokemon
+Competitive Analysis
 ==========================
-
-Row 
--------------------------
-
+### Most Common Pokemon by Type {data-padding=10}
 ```{r}
 #| echo: false
 inputPanel(
@@ -83,21 +81,14 @@ renderPlot({
 
 ```
 
-Test 2
-======================
-
+### Total Team Stats vs Expected Total
 ```{r}
 #| echo: false
 inputPanel(
   selectInput("stat", label = "Key Statistic:",
               choices = c("Health points" = "hp","Attack" = "attack","Defense" = "defense", "Special Attack" = "sp_atk","Special Defense" = "sp_def","Speed" = "speed"))
 )
-```
 
-Row 
--------------------------
-
-```{r, echo=FALSE}
 renderPlot({  
   tournament_results |> 
   left_join(national_dex, join_by(pokemon, alt_form_name == alt_form)) %>% 
