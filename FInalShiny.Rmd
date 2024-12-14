@@ -11,6 +11,8 @@ output:
 
 ```{r}
 #| echo: false
+
+# Importing Libraries for the flexdashboard
 library(tidyverse)
 library(plotly)
 library(flexdashboard)
@@ -22,6 +24,8 @@ library(gt)
 
 ```{r}
 #| echo: false
+
+# Reading in the data from the flexdashboard
 TypeChart <- read_csv("Data/TypeChart.csv")
 national_dex <- read_csv("Data/national_dex_forms.csv")
 tournament_results <- read_csv("Data/tournament_results_forms.csv")
@@ -29,10 +33,13 @@ tournament_results <- read_csv("Data/tournament_results_forms.csv")
 
 ```{r}
 #| echo: false
+
+# Defining custom color palate for Types
 type_colors <- c("#9fa19f", "#f08500", "#8eb7f2", "#8b3ecf", "#89531a", "#adaa7e",
                "#92a200", "#6b4172", "#6ea0b9", "#d63624", "#497cf3", "#54a113",
                "#f8d800", "#df497a", "#6ed6ff", "#595ce5", "#494949", "#f0a6d6"
                )
+#Giving names to the different colors defined above
 names(type_colors) = c("normal", "fighting", "flying", "poison", "ground", "rock",
                        "bug", "ghost", "steel", "fire", "water", "grass",
                        "electric", "psychic", "ice", "dragon", "dark", "fairy")
@@ -96,6 +103,8 @@ Column
 -----
 ```{r}
 #| echo: false
+
+#Input panel for user to define the Pokemon type shown in graph below
 inputPanel(
   selectInput(inputId = "type", 
               label = "Type: ", 
@@ -106,16 +115,23 @@ inputPanel(
   )
 )
 
+#Plot
 renderPlot({
+  #Join tournament_results and national_dex together to get Pokemon stats and types
   tournament_results |> 
   left_join(national_dex, join_by(pokemon, alt_form_name == alt_form)) |>
+  #Count how many times a Pokemon is seen (used) in the dataset 
   count(pokemon, name, type1, type2) %>%
+  #Optional filter for type, otherwise show results for overall most used Pokemon
   {if(input$type != "Overall") 
     filter(., type1 == str_to_lower(input$type) | type2 == str_to_lower(input$type)) 
     else
       .}|>  
+  #Get the top 25 most used Pokemon of the selected type
   slice_max(n, n = 25) |> 
+  #Make name a factor and reorder it by how many times the Pokemon appears
   mutate(name = fct_reorder(name, n)) |> 
+  #Create Plot
   ggplot(aes(x = name, y = n), fill = input$type) + 
   geom_col() +
   coord_flip() +
@@ -132,28 +148,58 @@ Column
 ---
 ```{r}
 #| echo: false
+
+#Input panel for user to define the stat shown in graph below
 inputPanel(
   selectInput("stat", label = "Key Statistic:",
               choices = c("Health points" = "hp","Attack" = "attack","Defense" = "defense", "Special Attack" = "sp_atk","Special Defense" = "sp_def","Speed" = "speed"))
 )
-
-
-renderPlot({  
-  tournament_results |> 
-  left_join(national_dex, join_by(pokemon, alt_form_name == alt_form)) %>% 
-  group_by(player) %>%
-  mutate(sum = sum(.data[[input$stat]])) %>%
-  slice_head() %>%
-  ggplot(aes(x = player, y = sum)) + 
-  geom_col() + 
-  geom_hline(yintercept = mean(national_dex[[input$stat]]) * 6, color = "red") + 
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-  labs(
-    title = str_c("Sum of the ", names(input$stat), " Stats of Pokemon on a Team"),
-    subtitle = str_c("Red Line Represents Avg ", input$stat, " Stat Across All Pokemon Times 6"),
-    x = "Player",
-    y = str_c("Total ", input$stat, " Stat for the Team")
+#Plot
+renderPlotly({ 
+  #Take the stat inputted by user and translate it from how it is stored in dataset
+  #to how it was shown to the user. (Used later on)
+  stat_labels <- c(
+    hp = "Health Points",
+    attack = "Attack",
+    defense = "Defense",
+    sp_atk = "Special Attack",
+    sp_def = "Special Defense",
+    speed = "Speed"
   )
+  stat_name <- stat_labels[[input$stat]]
+  
+  #Create data set used for graphing
+  #Join tournament_results and national_dex together to get Pokemon stats and types
+  stat_df <- tournament_results |> 
+    left_join(national_dex, join_by(pokemon, alt_form_name == alt_form)) |> 
+    #Get the sum of the selected stat for each team, while keeping the placement info
+    group_by(player, placement) |> 
+    summarise(total_stat = sum(.data[[input$stat]])) 
+  
+  #Create plot as a ggplot
+  stat_graph <- stat_df|> 
+    ggplot(aes(x = player, y = total_stat)) + 
+    geom_col() + 
+    geom_hline(yintercept = mean(national_dex[[input$stat]]) * 6, color = "red") + 
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+    labs(
+      title = str_c("Sum of the ", stat_name, " Stats of Pokemon on a Team"),
+      subtitle = str_c("Red Line Represents Avg ", 
+                       stat_name, 
+                       " Stat Across All Pokemon Times 6"
+                 ),
+      x = "Player",
+      y = str_c("Total ", stat_name, " Stat for the Team")
+    )
+  
+  #Take ggplot and make it into a plotly plot
+  ggplotly(stat_graph) |> 
+    #Modify plotly plot so hover text also shows placement information
+    style(
+      hovertext = paste("Player: ", stat_df$player, "\n",
+                           "Total ", stat_name, ": ", stat_df$total_stat, "\n",
+                           "Placement: ", stat_df$placement)
+    )
 })
 ```
 
