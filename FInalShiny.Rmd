@@ -1,13 +1,47 @@
 ---
 title: "Pokemon Tournament Analysis"
-author: "Jackson Marsh and Mario Rodriguez"
-date: "2024-12-11"
 runtime: shiny
 output: 
   flexdashboard::flex_dashboard:
       theme: yeti
       vertical_layout: scroll
 ---
+
+About
+==========================
+**Authors**
+Jackson Marsh and Mario Rodriguez 
+
+**About this project**
+Like any great pokemon trainer our mission is to catch them all. We set out to catch them all by scraping the online pokedex to get all information about every pokemon, their types, and all of their statistics. The stats we collected are: Health points, Attack, Defense, Special Attack, Special Defense and Speed. We also scrapped the web for the effectiveness of each type in attacks against all other types of pokemon to analyze their strengths and weaknesses in battles. 
+
+As well as these stats we scrapped the web for the results of a professional pokemon tournament. We used all of the stats from our pokemon to analyze why each player choose the pokemon they did and what thier strategies were.
+
+### Our variables
+
+**Pokemon** The number associated with each pokemon
+
+**Name** The name of each pokemon 
+
+**Type 1** Primary type of each pokemon
+
+**Type 2** Secondary type of each pokemon
+
+**Attack** The power of a pokemon's physical attacks 
+
+**Defense** How well a pokemon resists physical attacks. 
+
+**Special Attack** The power of a pokemon's special attacks. 
+
+**Special Defense** How well a pokemon resists special attacks. 
+
+**Speed** Determines which pokemon acts first in battle.
+
+**Player** Name of professional player
+
+**Placement** How well the player did in the tournament
+
+**Type chart** How effective each type is against one another 
 
 ```{r}
 #| echo: false
