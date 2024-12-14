@@ -70,13 +70,56 @@ tournament_results |>
 ```
 
 ```{r}
-tournament_results_forms |> 
-  left_join(national_dex_forms, join_by(pokemon, alt_form_name == alt_form)) %>% 
+tournament_results |> 
+  left_join(national_dex, join_by(pokemon, alt_form_name == alt_form)) %>% 
   group_by(player) %>%
   mutate(sum = sum(.data[["hp"]])) %>%
   slice_head() %>%
   ggplot(aes(x = player, y = sum)) + 
   geom_col() + 
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+```{r}
+stat_df <- tournament_results |> 
+  left_join(national_dex, join_by(pokemon, alt_form_name == alt_form)) |> 
+  group_by(player, placement) |> 
+  summarise(total_stat = sum(hp)) 
+
+stat_graph <- stat_df|> 
+  ggplot(aes(x = player, y = total_stat)) + 
+  geom_col() + 
+  geom_hline(yintercept = mean(national_dex$hp) * 6, color = "red") + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(
+    title = str_c("Sum of the ", "hp", " Stats of Pokemon on a Team"),
+    subtitle = str_c("Red Line Represents Avg ", 
+                     "hp", 
+                     " Stat Across All Pokemon Times 6"
+               ),
+    x = "Player",
+    y = str_c("Total ", "hp", " Stat for the Team")
+  )
+
+ggplotly(stat_graph) |> 
+  style(
+    hovertext = paste("Player: ", stat_df$player, "\n",
+                         "Total HP: ", stat_df$total_stat, "\n",
+                         "Placement: ", stat_df$placement)
+  )
+  
+```
+
+```{r}
+has_alt_forms <-read.csv("./Data/has_alt_forms.csv")
+
+tournament_results |> 
+  left_join(national_dex, join_by(pokemon, alt_form_name == alt_form)) |> 
+  semi_join(has_alt_forms, join_by(pokemon)) |> 
+  mutate(pokemon = factor(pokemon)) |> 
+  ggplot(aes(x = name, fill = name)) +
+  geom_bar(position = "dodge") +
+  facet_wrap(~pokemon, scales = "free", ncol = 2) +
+  coord_flip()
 ```
 

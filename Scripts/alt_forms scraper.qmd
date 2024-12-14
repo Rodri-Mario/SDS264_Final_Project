@@ -1,0 +1,83 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+#Importing libraries
+library(tidyverse)
+library(rvest)
+library(polite)
+library(httr)
+```
+
+```{r}
+get_regional_forms <- function(){
+  #Initialize Session
+  session <- bow("https://bulbapedia.bulbagarden.net/wiki/Regional_form")
+  
+  #wait for the page to fully load/run javascript
+  Sys.sleep(10)
+  
+  #Get the National Dex Number of each Pokemon with alt form
+  pokemon <- scrape(session) |> 
+    html_elements("td[style='font-family:monospace,monospace']") |> 
+    html_text() |> 
+    parse_number() |> 
+    #Needed to accommodate  Moewth having two regional forms
+    append(52) |> 
+    sort()
+  
+  alt_form_name <- scrape(session) |> 
+    html_elements("a:nth-child(3) span") |> 
+    html_text() |> 
+    case_match(
+               "Alola" ~ "alolan",
+               "Galar" ~ "galarian",
+               "Hisui" ~ "hisuian",
+               "Paldea" ~ "paldean"
+    )
+  
+  tibble(
+    pokemon, 
+    alt_form_name
+  )
+}
+```
+
+```{r}
+has_alt_forms <- get_regional_forms() |> 
+  #Adding Pokemon with major gender differences
+  add_row(
+    pokemon = 678,
+    alt_form_name = "female"
+  ) |> 
+  add_row(
+    pokemon = 876,
+    alt_form_name = "female"
+  ) |> 
+  add_row(
+    pokemon = 902,
+    alt_form_name = "female"
+  ) |> 
+  add_row(
+    pokemon = 916,
+    alt_form_name = "female"
+  ) |> 
+  #Adding Bloodmoon Ursaluna
+  add_row(
+    pokemon = 901,
+    alt_form_name = "bloodmoon"
+  ) |> 
+  #There are more but they don't show up in Tournament results, so will not 
+  #bother wilt hard coding the other 50 (cannot find a source that has them in 
+  #a easily scrapable format).
+  arrange(pokemon)
+  
+
+#Store results in csv
+write.csv(has_alt_forms, "./Data/has_alt_forms.csv", row.names = FALSE)
+```
+
+

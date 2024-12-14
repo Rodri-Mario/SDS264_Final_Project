@@ -101,6 +101,7 @@ Competitive Analysis
 ==========================
 Column
 -----
+
 ```{r}
 #| echo: false
 
@@ -144,8 +145,32 @@ renderPlot({
 
 ```
 
+
+```{r}
+#If only one form shows up, that means that only that form was used in the 
+#tournament
+renderPlot({
+has_alt_forms <-read.csv("./Data/has_alt_forms.csv")
+
+tournament_results |> 
+  left_join(national_dex, join_by(pokemon, alt_form_name == alt_form)) |> 
+  semi_join(has_alt_forms, join_by(pokemon)) |> 
+  mutate(pokemon = factor(pokemon)) |> 
+  ggplot(aes(x = name, fill = name)) +
+  geom_bar(position = "dodge", show.legend = FALSE) +
+  facet_wrap(~pokemon, scales = "free", ncol = 2) +
+  coord_flip() +
+  labs(
+    title = "How Many Times Was an Alternate Form Used Instead of a Base Form",
+    x = "Form Name",
+    y = "Appearances"
+  )
+})
+```
+
 Column
 ---
+
 ```{r}
 #| echo: false
 
@@ -202,6 +227,7 @@ renderPlotly({
     )
 })
 ```
+
 
 Type Analysis 
 ======================
