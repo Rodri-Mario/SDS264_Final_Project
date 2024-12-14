@@ -13,15 +13,6 @@ output:
 
 About
 ==========================
-
-Row
----
-
-```{r}
-  knitr::include_graphics("e3cc0514320be93113772100cbc1dbc4.png")
-```
-
-
 Row
 ---
 ### Authors
