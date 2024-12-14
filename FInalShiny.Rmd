@@ -1,52 +1,56 @@
 ---
-title: "Pokemon Tournament Analysis"
+title: "Pokémon Tournament Analysis"
 runtime: shiny
 output: 
   flexdashboard::flex_dashboard:
     theme:
       version: 4
-      bg: "#3466AF"
-      fg: "#FFCB05" 
-      primary: "#21386E"
-      navbar-bg: "#C7A008"
+      bg: "#FFFFFF"
+      fg: "#3466AF" 
+      primary: "#FFCB05"
+      navbar-bg: "#FFCB05"
       vertical_layout: scroll
 ---
 
 About
 ==========================
-**Authors**
+### Authors
 Jackson Marsh and Mario Rodriguez 
 
-**About this project**
-Like any great pokemon trainer our mission is to catch them all. We set out to catch them all by scraping the online pokedex to get all information about every pokemon, their types, and all of their statistics. The stats we collected are: Health points, Attack, Defense, Special Attack, Special Defense and Speed. We also scrapped the web for the effectiveness of each type in attacks against all other types of pokemon to analyze their strengths and weaknesses in battles. 
+### About this project
+Like any great Pokémon trainer our mission is to catch them all. We set out to catch them all by scraping the online pokedex to get all information about every Pokémon, their types, and all of their statistics. The stats we collected are: Health points, Attack, Defense, Special Attack, Special Defense and Speed. We also scrapped the web for the effectiveness of each type in attacks against all other types of Pokémon to analyze their strengths and weaknesses in battles. 
 
-As well as these stats we scrapped the web for the results of a professional pokemon tournament. We used all of the stats from our pokemon to analyze why each player choose the pokemon they did and what thier strategies were.
+As well as these stats we scrapped the web for the results of a professional Pokémon tournament. We used all of the stats from our Pokémon to analyze why each player choose the Pokémon they did and what thier strategies were.
 
 ### Our variables
 
-**Pokemon** The number associated with each pokemon
+**Pokémon** The number associated with each Pokémon
 
-**Name** The name of each pokemon 
+**Name** The name of each Pokémon 
 
-**Type 1** Primary type of each pokemon
+**Type 1** Primary type of each Pokémon
 
-**Type 2** Secondary type of each pokemon
+**Type 2** Secondary type of each Pokémon
 
-**Attack** The power of a pokemon's physical attacks 
+**Attack** The power of a Pokémon's physical attacks 
 
-**Defense** How well a pokemon resists physical attacks. 
+**Defense** How well a Pokémon resists physical attacks. 
 
-**Special Attack** The power of a pokemon's special attacks. 
+**Special Attack** The power of a Pokémon's special attacks. 
 
-**Special Defense** How well a pokemon resists special attacks. 
+**Special Defense** How well a Pokémon resists special attacks. 
 
-**Speed** Determines which pokemon acts first in battle.
+**Speed** Determines which Pokémon acts first in battle.
 
 **Player** Name of professional player
 
 **Placement** How well the player did in the tournament
 
 **Type chart** How effective each type is against one another 
+
+### How Pokémon battles work
+A Pokémon battle is a head to head match between two players that each have six Pokémon. Players take turns having one of their six Pokémon perform a move to either try and harm the opposite teams Pokémon or trying to power up their own Pokémon or their entire team. A players wins when they defeat all of the opposite teams Pokémon. 
+
 
 ```{r}
 #| echo: false
@@ -84,9 +88,9 @@ names(type_colors) = c("normal", "fighting", "flying", "poison", "ground", "rock
                        "electric", "psychic", "ice", "dragon", "dark", "fairy")
 ```
 
-Pokemon Stats
+Pokémon Stats
 ==========================
-In this first page we wanted to look into some of of the statistics across all pokemon in the pokedex. First we wanted to look at pokemon who excel in each of the stats we have for each pokemon. We decdied to look at the top 10 for each stat. This was able to show us what some of the most powerful pokemon are in certain categories. For example we can see what the pokemon with the highest health are to get an idea of what it means for a pokemon to have a large Hp. We also decided to show an overview of how common each type is. As we will investigate later, type is very important in pokemon competitions. Lastly we decided to show the length of every pokemon's name. While a long name does not provide any advantage in battle, this does give us a great tool to see every single pokemon grouped by the length of thier names. 
+
 ```{r}
 inputPanel(
   selectInput("stat", label = "Key Statistic:",
@@ -101,11 +105,14 @@ Row
 renderTable({
   national_dex %>%
   arrange(desc(.data[[input$stat]])) %>%
-  slice_head(n = 10) %>%
+  slice_head(n = 25) %>%
   select(name, .data[[input$stat]]) %>%
   gt()
 })
 ```
+  In this first page we wanted to look into some of of the statistics across all Pokémon in the pokedex. First we wanted to look at Pokémon who excel in each of the important stats in Pokémon battles. We decided to look at the top 25 Pokémon for each stat. These tables show us what some of the most powerful Pokémon are in certain categories. For example we can see what the Pokémon with the highest health are to get an idea of what it means for a Pokémon to have a large Hp value. 
+  We also decided to show an overview of how common each type is. As we will investigate later, type is very important in Pokémon competitions. There are 18 different Pokémon types and each type influences a variety of factors about the Pokémon. Moves can only be learned specific types and certain types tend to favor some stats over others. That is why we have a whole tab dedicated to type analysis. 
+  Lastly we decided to provide a slider that adjusts based on the length of every Pokémon's name. While a long name does not provide any advantage in battle, this does give us a great tool to see every single Pokémon grouped by the length of their names.
 
 ```{r}
 renderPlot({
@@ -117,7 +124,7 @@ national_dex %>%
   geom_col() + 
   scale_fill_manual(values = type_colors)  + 
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
-  labs(title = "Frequency of each type across all pokemon", x = "Type", y = "Frequency")
+  labs(title = "Frequency of each type across all Pokémon", x = "Type", y = "Frequency")
 })
 ```
 
@@ -145,7 +152,7 @@ Column
 ```{r}
 #| echo: false
 
-#Input panel for user to define the Pokemon type shown in graph below
+#Input panel for user to define the Pokémon type shown in graph below
 inputPanel(
   selectInput(inputId = "type", 
               label = "Type: ", 
@@ -158,27 +165,27 @@ inputPanel(
 
 #Plot
 renderPlot({
-  #Join tournament_results and national_dex together to get Pokemon stats and types
+  #Join tournament_results and national_dex together to get Pokémon stats and types
   tournament_results |> 
-  left_join(national_dex, join_by(pokemon, alt_form_name == alt_form)) |>
-  #Count how many times a Pokemon is seen (used) in the dataset 
-  count(pokemon, name, type1, type2) %>%
-  #Optional filter for type, otherwise show results for overall most used Pokemon
+  left_join(national_dex, join_by(Pokémon, alt_form_name == alt_form)) |>
+  #Count how many times a Pokémon is seen (used) in the dataset 
+  count(Pokémon, name, type1, type2) %>%
+  #Optional filter for type, otherwise show results for overall most used Pokémon
   {if(input$type != "Overall") 
     filter(., type1 == str_to_lower(input$type) | type2 == str_to_lower(input$type)) 
     else
       .}|>  
-  #Get the top 25 most used Pokemon of the selected type
+  #Get the top 25 most used Pokémon of the selected type
   slice_max(n, n = 25) |> 
-  #Make name a factor and reorder it by how many times the Pokemon appears
+  #Make name a factor and reorder it by how many times the Pokémon appears
   mutate(name = fct_reorder(name, n)) |> 
   #Create Plot
   ggplot(aes(x = name, y = n), fill = input$type) + 
   geom_col() +
   coord_flip() +
   labs(
-    title = str_c("Most Commonly Used ", input$type, " Pokemon"),
-    x = "Pokemon",
+    title = str_c("Most Commonly Used ", input$type, " Pokémon"),
+    x = "Pokémon",
     y = "Times Present on a Team"
   )
 })
@@ -190,19 +197,19 @@ renderPlot({
 #If only one form shows up, that means that only that form was used in the 
 #tournament
 renderPlot({
-#Read in what Pokemon has an Alt form (regional/gender)
+#Read in what Pokémon has an Alt form (regional/gender)
 has_alt_forms <-read.csv("./Data/has_alt_forms.csv")
 
 tournament_results |> 
-  #Join tournament_results and national_dex together to get Pokemon stats and types
-  left_join(national_dex, join_by(pokemon, alt_form_name == alt_form)) |> 
-  semi_join(has_alt_forms, join_by(pokemon)) |> 
-  #Make Pokemon a factor so it doesn't treat it as a number
-  mutate(pokemon = factor(pokemon)) |> 
+  #Join tournament_results and national_dex together to get Pokémon stats and types
+  left_join(national_dex, join_by(Pokémon, alt_form_name == alt_form)) |> 
+  semi_join(has_alt_forms, join_by(Pokémon)) |> 
+  #Make Pokémon a factor so it doesn't treat it as a number
+  mutate(Pokémon = factor(Pokémon)) |> 
   #Plot
   ggplot(aes(x = name, fill = name)) +
   geom_bar(position = "dodge", show.legend = FALSE) +
-  facet_wrap(~pokemon, scales = "free", ncol = 2) +
+  facet_wrap(~Pokémon, scales = "free", ncol = 2) +
   coord_flip() +
   labs(
     title = "How Many Times Was an Alternate Form Used Instead of a Base Form",
@@ -238,9 +245,9 @@ renderPlotly({
   stat_name <- stat_labels[[input$stat]]
   
   #Create data set used for graphing
-  #Join tournament_results and national_dex together to get Pokemon stats and types
+  #Join tournament_results and national_dex together to get Pokémon stats and types
   stat_df <- tournament_results |> 
-    left_join(national_dex, join_by(pokemon, alt_form_name == alt_form)) |> 
+    left_join(national_dex, join_by(Pokémon, alt_form_name == alt_form)) |> 
     #Get the sum of the selected stat for each team, while keeping the placement info
     group_by(player, placement) |> 
     summarise(total_stat = sum(.data[[input$stat]])) 
@@ -249,15 +256,15 @@ renderPlotly({
   stat_graph <- stat_df|> 
     ggplot(aes(x = player, y = total_stat)) + 
     geom_col() + 
-    #Line represents the avg of that stat among all Pokemon, then multiplied by
+    #Line represents the avg of that stat among all Pokémon, then multiplied by
     #6 to represent the expected sum of that stat for a full team of 6
     geom_hline(yintercept = mean(national_dex[[input$stat]]) * 6, color = "red") + 
     theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
     labs(
-      title = str_c("Sum of the ", stat_name, " Stats of Pokemon on a Team"),
+      title = str_c("Sum of the ", stat_name, " Stats of Pokémon on a Team"),
       subtitle = str_c("Red Line Represents Avg ", 
                        stat_name, 
-                       " Stat Across All Pokemon Times 6"
+                       " Stat Across All Pokémon Times 6"
                  ),
       x = "Player",
       y = str_c("Total ", stat_name, " Stat for the Team")
@@ -274,10 +281,32 @@ renderPlotly({
 })
 ```
 
-For these plots we wanted to get a better insight into why each player choose the team they did. We looked at what specific pokemon were used the most. This chart can be arranged by all pokemon or specific types. From this graph you can see that there are some types of pokemon that are choose much more than others. For example, there are 10 different fire type pokemon used while there are only 2 ice type pokemon used. We also looked at how each pro player built their team based on all of the key stats. 
+  For these plots we wanted to get a better insight into why each player choose the team they did. We looked at what specific Pokémon were used the most. This chart can be arranged by all Pokémon or specific types. From this graph you can see that there are some types of Pokémon that are choose much more than others. For example, there are 10 different fire type Pokémon used while there are only 2 ice type Pokémon used. 
+  We also looked at how each pro player built their team based on all of the key stats. From this graph we can gain a lot of insight into what stats pro players prioritized as we compared a pro players sum of team stats to what the average of that statistic across all Pokémon would be for a team of 6. 
+    Lastly we wanted made a visual to explore the different alternate types of Pokémon that were used by pro players and what alternate versions they choose to pick. Alternate versions of a Pokémon are essentially the same Pokémon with a slight difference to the original version. 
 
 Type Analysis 
 ======================
+
+  For this page we looked more into each type of Pokémon and how this effects not only their stats but why pro players choose to use some types over others. First we looked at all of the key stats for each type of Pokémon to get an insight into what types excel at what stats and which struggle. There is a lot to learn from this graphic. There are definitely some types that are above average in every stat like dragon type. There are also some that clearly specialize in a certain stat like fighting with its high attack value or steal and rock with its high defense. 
+  We also wanted to analyze how each type performs against all other types. For this we first wanted to show the whole type chart which shows how effective a type is against any other type. A 1 means that it does a normal amount of damage. A 2 means its super effective. a 0.5 means its not very effective and a 0 means it does no damage. 
+  From these values we calculated what the total amount of advantage a certain type has against all other types and compared that to how often a type was choose by pro players. From this graph we saw a very surprising and interesting trend which was a more effective type was less preferred by pro players which is shown by the negative trend. This shows us how specialized type selection has become for pro players. Pro players must try and find what types are effective against other types choose by other pro players. This makes for a very complicated math equation proving why these players are professionals. 
+
+```{r}
+renderTable({
+national_dex %>%
+  pivot_longer(type1:type2, names_to = NULL, values_to = "type" ) %>%
+  filter(!is.na(type)) %>%
+  group_by(type) %>%
+  summarise(Mean_HP = mean(hp),
+            Mean_Attack = mean(attack), 
+            Mean_Defense = mean(defense), 
+            Mean_Special_Attack = mean(sp_atk), 
+            Mean_Special_Defense = mean(sp_def), 
+            Mean_Speed = mean(speed)) %>%
+  gt()
+})
+```
 
 ```{r}
 renderTable({
@@ -300,7 +329,7 @@ Typechart2 <- TypeChart %>%
 
 renderPlot({
 tournament_results |> 
-  left_join(national_dex, join_by(pokemon, alt_form_name == alt_form)) |> 
+  left_join(national_dex, join_by(Pokémon, alt_form_name == alt_form)) |> 
   pivot_longer(type1:type2, names_to = NULL, values_to = "type" ) |> 
   filter(!is.na(type)) |> 
   mutate(type = fct_infreq(type)) %>% 
@@ -313,5 +342,3 @@ tournament_results |>
   labs(title = "How offten each type was used in the tournament compaired to the total of a types effectiveness", x = "Frequency of type in tournament", y = "Sum of attack effectiveness")
 })
 ```
-
-
