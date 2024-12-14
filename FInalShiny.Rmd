@@ -3,7 +3,12 @@ title: "Pokemon Tournament Analysis"
 runtime: shiny
 output: 
   flexdashboard::flex_dashboard:
-      theme: yeti
+    theme:
+      version: 4
+      bg: "#3466AF"
+      fg: "#FFCB05" 
+      primary: "#21386E"
+      navbar-bg: "#C7A008"
       vertical_layout: scroll
 ---
 
@@ -81,6 +86,7 @@ names(type_colors) = c("normal", "fighting", "flying", "poison", "ground", "rock
 
 Pokemon Stats
 ==========================
+In this first page we wanted to look into some of of the statistics across all pokemon in the pokedex. First we wanted to look at pokemon who excel in each of the stats we have for each pokemon. We decdied to look at the top 10 for each stat. This was able to show us what some of the most powerful pokemon are in certain categories. For example we can see what the pokemon with the highest health are to get an idea of what it means for a pokemon to have a large Hp. We also decided to show an overview of how common each type is. As we will investigate later, type is very important in pokemon competitions. Lastly we decided to show the length of every pokemon's name. While a long name does not provide any advantage in battle, this does give us a great tool to see every single pokemon grouped by the length of thier names. 
 ```{r}
 inputPanel(
   selectInput("stat", label = "Key Statistic:",
@@ -268,9 +274,19 @@ renderPlotly({
 })
 ```
 
+For these plots we wanted to get a better insight into why each player choose the team they did. We looked at what specific pokemon were used the most. This chart can be arranged by all pokemon or specific types. From this graph you can see that there are some types of pokemon that are choose much more than others. For example, there are 10 different fire type pokemon used while there are only 2 ice type pokemon used. We also looked at how each pro player built their team based on all of the key stats. 
 
 Type Analysis 
 ======================
+
+```{r}
+renderTable({
+  TypeChart %>%
+    rename("Attack|Defense" = "...1") %>%
+    gt()
+})
+```
+
 
 ```{r}
 Typechart2 <- TypeChart %>%
@@ -293,7 +309,8 @@ tournament_results |>
    ggplot(aes(x = n, y = sum_of_attacks)) +
   geom_point(aes(color = type)) +
   geom_smooth(method = lm, se = F) + 
-  scale_color_manual(values = type_colors)
+  scale_color_manual(values = type_colors) %>%
+  labs(title = "How offten each type was used in the tournament compaired to the total of a types effectiveness", x = "Frequency of type in tournament", y = "Sum of attack effectiveness")
 })
 ```
 
