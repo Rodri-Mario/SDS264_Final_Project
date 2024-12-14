@@ -150,12 +150,16 @@ renderPlot({
 #If only one form shows up, that means that only that form was used in the 
 #tournament
 renderPlot({
+#Read in what Pokemon has an Alt form (regional/gender)
 has_alt_forms <-read.csv("./Data/has_alt_forms.csv")
 
 tournament_results |> 
+  #Join tournament_results and national_dex together to get Pokemon stats and types
   left_join(national_dex, join_by(pokemon, alt_form_name == alt_form)) |> 
   semi_join(has_alt_forms, join_by(pokemon)) |> 
+  #Make Pokemon a factor so it doesn't treat it as a number
   mutate(pokemon = factor(pokemon)) |> 
+  #Plot
   ggplot(aes(x = name, fill = name)) +
   geom_bar(position = "dodge", show.legend = FALSE) +
   facet_wrap(~pokemon, scales = "free", ncol = 2) +
@@ -205,6 +209,8 @@ renderPlotly({
   stat_graph <- stat_df|> 
     ggplot(aes(x = player, y = total_stat)) + 
     geom_col() + 
+    #Line represents the avg of that stat among all Pokemon, then multiplied by
+    #6 to represent the expected sum of that stat for a full team of 6
     geom_hline(yintercept = mean(national_dex[[input$stat]]) * 6, color = "red") + 
     theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
     labs(
